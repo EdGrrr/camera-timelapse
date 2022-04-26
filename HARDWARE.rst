@@ -21,6 +21,10 @@ The following is some recommendations for hardware setup, although this code sho
 
   https://thepihut.com/products/flexible-camera-tripod
 
+  which also requires
+
+  https://thepihut.com/products/camera-tripod-nuts-5-pack
+
 - GPS module (optional, for time synchronisation)
 
   If time needs to be matched externally, NTP works (as long as you have a network connection). If you are working without a network (or somewhere that blocks NTP), a GPS module can provide that time signal. We have used the Adafruit Ultimate GPS HAT, but others should work too.
