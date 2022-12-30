@@ -1,6 +1,9 @@
 #! /bin/bash
 
-. /home/pi/Timelapse/config.sh
+SOURCE=$( readlink -f -- "$0"; )
+SCRIPT_DIR=$( dirname -- "$SOURCE"; )
+
+. ${SCRIPT_DIR}/config.sh
 
 DAY=$(date -u -d '1 hour ago' +"%Y-%m-%d")
 HOUR=$(date -u -d '1 hour ago' +"%H")

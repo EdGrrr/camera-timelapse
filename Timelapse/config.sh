@@ -1,2 +1,2 @@
-MAIN_FOLDER=/home/pi/camera_output/
+MAIN_FOLDER=${HOME}/camera_output/
 PREFIX="tl"

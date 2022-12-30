@@ -1,6 +1,9 @@
 #! /bin/bash
 
-. /home/pi/Timelapse/config.sh
+SOURCE=$( readlink -f -- "$0"; )
+SCRIPT_DIR=$( dirname -- "$SOURCE"; )
+
+. ${SCRIPT_DIR}/config.sh
 
 # Takes up to an hour worth of images. Should automatically timeout at the hour
 
@@ -10,4 +13,4 @@ HOUR=$(date -u +"%H")
 FOLDER=${MAIN_FOLDER}/${DAY}/${HOUR}
 
 mkdir -p ${FOLDER}
-python3 /home/pi/Timelapse/multi_exposure_calibrate.py ${FOLDER} ${PREFIX}
+python3 ${SCRIPT_DIR}/multi_exposure_calibrate.py ${FOLDER} ${PREFIX}
