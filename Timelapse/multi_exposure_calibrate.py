@@ -15,16 +15,16 @@ def get_lock(process_name):
     # Without holding a reference to our socket somewhere it gets garbage
     # collected when the function exits
     get_lock._lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-
+    print('Testing for exisiting process ... ', end='')
     try:
         # The null byte (\0) means the socket is created 
         # in the abstract namespace instead of being created 
         # on the file system itself.
         # Works only in Linux
         get_lock._lock_socket.bind('\0' + process_name)
-        # print('Timelapse start')
+        print('None found. Begin timelapse.')
     except socket.error:
-        # print('Timelapse already running')
+        print('Timelapse already running')
         sys.exit()
 
 def wait_until(waittime, mindiff=0.01):
@@ -70,7 +70,9 @@ if (sza1>95) and (sza2>95):
     # Sun is below horizon.
     # If called within 10 minutes of the hour, record a calibration triplet
     # This makes sure we only get one triplet per hour
+    print('Sun below horizon')
     if (now.minute < 10):
+        print('Calibration triplet')
         stime = time()
         with picamera.PiCamera(resolution = (1280, 960),
                                framerate=Fraction(1, 6),
@@ -93,6 +95,7 @@ if (sza1>95) and (sza2>95):
 # Video images are only recorded if daytime
 stime = time()
 with picamera.PiCamera() as camera:
+    print('Setting up camera')
     camera.resolution = (1280, 960)
     stime = time()
     camera.iso = 100 # 100 is lowest valid value
@@ -114,9 +117,9 @@ with picamera.PiCamera() as camera:
     waittime = datetime.datetime(waittime.year, waittime.month, waittime.day,
                                  waittime.hour, waittime.minute,
                                  waittime.second-waittime.second%5, 0)
-    
+    print('Waiting to start')
     wait_until(waittime)
-    
+    print('Begin images')
     while datetime.datetime.utcnow()<endtime:
         for ss, ssl in zip(shutter_speeds, ss_label):  
             camera.shutter_speed = ss
