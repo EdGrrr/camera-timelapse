@@ -5,11 +5,18 @@ import re
 import subprocess
 import json
 import datetime
+import sys
 
 def get_process_output(proc):
     process = subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, err = process.communicate()
     return output
+
+try:
+    outputfile = sys.argv[1]
+except:
+    outputfile = 'status.json'
+
 
 status = {}
 
@@ -68,6 +75,6 @@ while True:
         break
 status['recent_image'] = os.path.basename(imagedir)
 
-with open('status.json', 'w') as f:
+with open(outputfile, 'w') as f:
     json.dump(status, f)
 print('Status written successfully')
