@@ -77,4 +77,5 @@ status['recent_image'] = os.path.basename(imagedir)
 
 with open(outputfile, 'w') as f:
     json.dump(status, f)
+    f.write('\n')
 print('Status written successfully')
