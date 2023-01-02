@@ -6,6 +6,7 @@ import subprocess
 import json
 import datetime
 import sys
+import sensors
 
 def get_process_output(proc):
     process = subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -19,6 +20,19 @@ except:
 
 
 status = {}
+
+# Most recent image
+imagedir = os.path.expandvars('${HOME}/camera_output')
+while True:
+    try:
+        dirs = os.listdir(imagedir)
+        dirs.sort()
+        imagedir = os.path.join(imagedir, dirs[-1])
+    except NotADirectoryError:
+        break
+status['recent_image'] = os.path.basename(imagedir)
+# Do now to avoid GPS issues with timing of status
+status['status_time'] = datetime.datetime.now().isoformat()
 
 # Freespace
 df_output = get_process_output(['df', '-h'])
@@ -68,18 +82,22 @@ status['ntp_gps_status'] = [b for b in ntpd_output if 'GPS' in b][0][0]
 status['ntp_janet_status'] = [b for b in ntpd_output if 'ja.net' in b][0][0]
 status['ntp_janet_checktime'] = list(filter(None, [b for b in ntpd_output if 'ja.net' in b][0].split(' ')))[4]
 
-status['status_time'] = datetime.datetime.now().isoformat()
+# Sensors
+press = sensors.Pressure()
+pd = press.get_data()
+status.update(pd)
 
-# Most recent image
-imagedir = os.path.expandvars('${HOME}/camera_output')
-while True:
-    try:
-        dirs = os.listdir(imagedir)
-        dirs.sort()
-        imagedir = os.path.join(imagedir, dirs[-1])
-    except NotADirectoryError:
-        break
-status['recent_image'] = os.path.basename(imagedir)
+acc = sensors.AccelGyro()
+acd = acc.get_data()
+status.update(acd)
+
+mag = sensors.Mag()
+md = mag.get_data()
+status.update(md)
+
+status['accXangle'], status['accYangle'] = sensors.get_rotation_angles(acd)
+status['heading'] = sensors.get_heading(md)
+status['tiltCompHeading'], status['pitch'], status['roll'] = sensors.tilt_compensated_heading(acd, md)
 
 with open(outputfile, 'w') as f:
     json.dump(status, f)
