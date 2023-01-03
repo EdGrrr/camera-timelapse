@@ -27,6 +27,8 @@ while True:
     try:
         dirs = os.listdir(imagedir)
         dirs.sort()
+        if 'cal' in dirs: dirs.remove('cal')
+        if 'videos' in dirs: dirs.remove('videos')
         imagedir = os.path.join(imagedir, dirs[-1])
     except NotADirectoryError:
         break
