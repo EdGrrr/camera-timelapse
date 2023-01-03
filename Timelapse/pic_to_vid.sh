@@ -24,4 +24,4 @@ mv *_CAL*.jpg ${MAIN_FOLDER}/cal/${DAY} 2> /dev/null
 
 cd ..
 #tar -zcvf ${HOUR}.tar.gz ${HOUR} 
-rm -r ${HOUR}
+rm -rf ${HOUR}
