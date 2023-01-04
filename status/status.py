@@ -64,7 +64,7 @@ status['timelapse_timer'] = timelapse_timer
 
 # GPS status
 gps_output = get_process_output(['gpspipe', '-w', '-n 10']).decode('ascii')
-x  = re.search("mode\":(.),.*lat\":(\d*.\d*),.*lon\":(.*?\..*?),", gps_output)
+x  = re.search("mode\":(.),.*lat\":(\d*.\d*),.*lon\":(.*?\..*?),.*altHAE\":(.*?\..*?),.*altMSL\":(.*?\..*?),", gps_output)
 try:
     status['gps_status'] = x.groups()[0]
 except:
@@ -72,9 +72,14 @@ except:
 try:
     status['gps_lon'] = x.groups()[2]
     status['gps_lat'] = x.groups()[1]
+    status['gps_altHAE'] = x.groups()[3]
+    status['gps_altMSL'] = x.groups()[4]
+
 except:
     status['gps_lon'] = None
     status['gps_lat'] = None
+    status['gps_altHAE'] = None
+    status['gps_altMSL'] = None
 
 # NTP status
 ntpd_output = get_process_output(['ntpq', '-p']).decode('ascii').split('\n')
