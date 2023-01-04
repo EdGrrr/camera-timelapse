@@ -53,11 +53,11 @@ status['usb_usage'] = f'{100*float(df_usb[2])/float(df_usb[1]):.3f}%'
 
 # Timelapse status
 timelapse_running = [b for b in
-                     get_process_output(['systemctl', 'show', 'camera-timelapse']).decode('ascii').split('\n')
+                     get_process_output(['systemctl', 'show', 'argus-camera-timelapse']).decode('ascii').split('\n')
                      if b.startswith('ActiveState=')][0].split('=')[1]
 status['timelapse_status'] = timelapse_running
 timelapse_timer = [b for b in
-                   get_process_output(['systemctl', 'show', 'camera-timelapse.timer']).decode('ascii').split('\n')
+                   get_process_output(['systemctl', 'show', 'argus-camera-timelapse.timer']).decode('ascii').split('\n')
                    if b.startswith('ActiveState=')][0].split('=')[1]
 status['timelapse_timer'] = timelapse_timer
 
