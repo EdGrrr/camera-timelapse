@@ -102,13 +102,14 @@ try:
     mag = sensors.Mag()
     md = mag.get_data()
     status.update(md)
+    
+    status['accXangle'], status['accYangle'] = sensors.get_rotation_angles(acd)
+    status['heading'] = sensors.get_heading(md)
+    status['tiltCompHeading'], status['pitch'], status['roll'] = sensors.tilt_compensated_heading(acd, md)
 except OSError:
     print('Sensors unavailable via I2C')
-    
-status['accXangle'], status['accYangle'] = sensors.get_rotation_angles(acd)
-status['heading'] = sensors.get_heading(md)
-status['tiltCompHeading'], status['pitch'], status['roll'] = sensors.tilt_compensated_heading(acd, md)
 
+    
 with open(outputfile, 'w') as f:
     json.dump(status, f)
     f.write('\n')
