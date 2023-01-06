@@ -89,19 +89,22 @@ status['ntp_gps_status'] = [b for b in ntpd_output if 'GPS' in b][0][0]
 status['ntp_janet_status'] = [b for b in ntpd_output if 'ja.net' in b][0][0]
 status['ntp_janet_checktime'] = list(filter(None, [b for b in ntpd_output if 'ja.net' in b][0].split(' ')))[4]
 
-# Sensors
-press = sensors.Pressure()
-pd = press.get_data()
-status.update(pd)
+try:
+    # Sensors
+    press = sensors.Pressure()
+    pd = press.get_data()
+    status.update(pd)
 
-acc = sensors.AccelGyro()
-acd = acc.get_data()
-status.update(acd)
+    acc = sensors.AccelGyro()
+    acd = acc.get_data()
+    status.update(acd)
 
-mag = sensors.Mag()
-md = mag.get_data()
-status.update(md)
-
+    mag = sensors.Mag()
+    md = mag.get_data()
+    status.update(md)
+except OSError:
+    print('Sensors unavailable via I2C')
+    
 status['accXangle'], status['accYangle'] = sensors.get_rotation_angles(acd)
 status['heading'] = sensors.get_heading(md)
 status['tiltCompHeading'], status['pitch'], status['roll'] = sensors.tilt_compensated_heading(acd, md)
