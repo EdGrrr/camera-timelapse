@@ -47,19 +47,26 @@ status['status_time'] = datetime.datetime.now().isoformat()
 
 # Freespace
 df_output = get_process_output(['df', '-h'])
-df_usb = [b for b in
-          [ a for a in df_output.decode('ascii').split('\n')
-            if 'USB' in a][0].split(' ')
-          if b != '']
-status['freespace'] = df_usb[3]
-
+try:
+    df_usb = [b for b in
+              [ a for a in df_output.decode('ascii').split('\n')
+                if 'USB' in a][0].split(' ')
+              if b != '']
+    status['freespace'] = df_usb[3]
+except IndexError:
+    status['freespace'] = None
+    
 df_output = get_process_output(['df'])
-df_usb = [b for b in
-          [ a for a in df_output.decode('ascii').split('\n')
-            if 'USB' in a][0].split(' ')
-          if b != '']
-status['usb_usage'] = f'{100*float(df_usb[2])/float(df_usb[1]):.3f}%'
+try:
+    df_usb = [b for b in
+              [ a for a in df_output.decode('ascii').split('\n')
+                if 'USB' in a][0].split(' ')
+              if b != '']
+    status['usb_usage'] = f'{100*float(df_usb[2])/float(df_usb[1]):.3f}%'
+except IndexError:
+    status['usb_usage'] = None
 
+    
 # Timelapse status
 timelapse_running = [b for b in
                      get_process_output(['systemctl', 'show', 'argus-camera-timelapse']).decode('ascii').split('\n')
