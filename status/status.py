@@ -29,10 +29,14 @@ while True:
         dirs.sort()
         if 'cal' in dirs: dirs.remove('cal')
         if 'videos' in dirs: dirs.remove('videos')
+        if len(dirs) == 0:
+            # No valid image directories
+            status['recent_image'] = None
+            break
         imagedir = os.path.join(imagedir, dirs[-1])
     except NotADirectoryError:
+        status['recent_image'] = os.path.basename(imagedir)
         break
-status['recent_image'] = os.path.basename(imagedir)
 # Do now to avoid GPS issues with timing of status
 status['status_time'] = datetime.datetime.now().isoformat()
 
