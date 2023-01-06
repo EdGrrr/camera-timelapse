@@ -25,19 +25,19 @@ status = {}
 try:
     imagedir = os.path.expandvars('${HOME}/camera_output')
     while True:
-    try:
-        dirs = os.listdir(imagedir)
-        dirs.sort()
-        if 'cal' in dirs: dirs.remove('cal')
-        if 'videos' in dirs: dirs.remove('videos')
-        if len(dirs) == 0:
-            # No valid image directories
-            status['recent_image'] = None
+        try:
+            dirs = os.listdir(imagedir)
+            dirs.sort()
+            if 'cal' in dirs: dirs.remove('cal')
+            if 'videos' in dirs: dirs.remove('videos')
+            if len(dirs) == 0:
+                # No valid image directories
+                status['recent_image'] = None
+                break
+            imagedir = os.path.join(imagedir, dirs[-1])
+        except NotADirectoryError:
+            status['recent_image'] = os.path.basename(imagedir)
             break
-        imagedir = os.path.join(imagedir, dirs[-1])
-    except NotADirectoryError:
-        status['recent_image'] = os.path.basename(imagedir)
-        break
 except FileNotFoundError:
     # No USB storage
     status['recent_image'] = None
