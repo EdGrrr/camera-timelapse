@@ -22,8 +22,9 @@ except:
 status = {}
 
 # Most recent image
-imagedir = os.path.expandvars('${HOME}/camera_output')
-while True:
+try:
+    imagedir = os.path.expandvars('${HOME}/camera_output')
+    while True:
     try:
         dirs = os.listdir(imagedir)
         dirs.sort()
@@ -37,6 +38,10 @@ while True:
     except NotADirectoryError:
         status['recent_image'] = os.path.basename(imagedir)
         break
+except FileNotFoundError:
+    # No USB storage
+    status['recent_image'] = None
+    
 # Do now to avoid GPS issues with timing of status
 status['status_time'] = datetime.datetime.now().isoformat()
 
