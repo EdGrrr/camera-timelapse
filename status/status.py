@@ -125,7 +125,7 @@ try:
 except OSError:
     print('Sensors unavailable via I2C')
 
-status['rpi_temp'] = get_process_output(['vcgencmd', 'measure_temp']).descode('ascii')[5:-2]
+status['rpi_temp'] = get_process_output(['vcgencmd', 'measure_temp']).decode('ascii')[5:-2]
     
 with open(outputfile, 'w') as f:
     json.dump(status, f)
