@@ -125,6 +125,20 @@ try:
 except OSError:
     print('Sensors unavailable via I2C')
 
+try:
+    # Power status
+    from pijuice import PiJuice
+    pijuice = PiJuice(1, 0x14)
+    pjstatus = pijuice.status.GetStatus()
+    status['pj_error'] = pjstatus['data']['isFault']
+    status['pj_status'] = pjstatus['data']['battery']
+    status['pj_charge'] = pijuice.status.GetChargeLevel()['data']
+    status['pj_current'] = pijuice.status.GetBatteryCurrent()['data']
+    status['pj_IOcurrent'] = pijuice.status.GetIoCurrent()['data']
+    status['pj_battTemp'] = pijuice.status.GetBatteryTemperature()['data']
+except:
+    pass
+
 status['rpi_temp'] = get_process_output(['vcgencmd', 'measure_temp']).decode('ascii').strip()[5:-2]
     
 with open(outputfile, 'w') as f:
