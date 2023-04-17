@@ -78,19 +78,19 @@ timelapse_timer = [b for b in
 status['timelapse_timer'] = timelapse_timer
 
 
-# GPS status
-gps_output = get_process_output(['gpspipe', '-w', '-n 10']).decode('ascii')
+# GPS status - exit after 2 seconds (incase no GPS device is attached), should be enough for a TPV vector
+gps_output = get_process_output(['gpspipe', '-w', '-x 2']).decode('ascii')
 x  = re.search("mode\":(.),.*lat\":(\d*.\d*),.*lon\":(.*?\..*?),.*altHAE\":(.*?\..*?),.*altMSL\":(.*?\..*?),", gps_output)
 try:
     status['gps_status'] = x.groups()[0]
 except:
     status['gps_status'] = None
+
 try:
     status['gps_lon'] = x.groups()[2]
     status['gps_lat'] = x.groups()[1]
     status['gps_altHAE'] = x.groups()[3]
     status['gps_altMSL'] = x.groups()[4]
-
 except:
     status['gps_lon'] = None
     status['gps_lat'] = None
