@@ -102,9 +102,13 @@ ntpd_output = get_process_output(['ntpq', '-p']).decode('ascii').split('\n')
 status['ntp_pps_status'] = [b for b in ntpd_output if 'PPS' in b][0][0]
 status['ntp_pps_checktime'] = list(filter(None, [b for b in ntpd_output if 'PPS' in b][0].split(' ')))[4]
 status['ntp_gps_status'] = [b for b in ntpd_output if 'GPS' in b][0][0]
-status['ntp_janet_status'] = [b for b in ntpd_output if 'ja.net' in b][0][0]
-status['ntp_janet_checktime'] = list(filter(None, [b for b in ntpd_output if 'ja.net' in b][0].split(' ')))[4]
-
+try:
+    status['ntp_janet_status'] = [b for b in ntpd_output if 'ja.net' in b][0][0]
+    status['ntp_janet_checktime'] = list(filter(None, [b for b in ntpd_output if 'ja.net' in b][0].split(' ')))[4]
+except IndexError: # No network connection means no janet status
+    status['ntp_janet_checktime'] = None
+    status['ntp_janet_status'] = None
+    
 try:
     # Sensors
     press = sensors.Pressure()
