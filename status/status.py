@@ -13,10 +13,10 @@ def get_process_output(proc):
     output, err = process.communicate()
     return output
 
-try:
-    outputfile = sys.argv[1]
-except:
-    outputfile = 'status.json'
+dtime = datetime.datetime.now()
+dstr = datetime.datetime.now().strftime('%Y%m%d-%H%M')
+os.mkdirs('/home/arguscam/status/')
+outputfile = f'/home/arguscam/status/status_{dstr}.json'
 
 
 status = {}
