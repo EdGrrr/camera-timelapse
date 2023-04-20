@@ -15,7 +15,7 @@ def get_process_output(proc):
 
 dtime = datetime.datetime.now()
 dstr = datetime.datetime.now().strftime('%Y%m%d-%H%M')
-os.makedirs('/home/arguscam/status/')
+os.makedirs('/home/arguscam/status/', exist_ok=True)
 outputfile = f'/home/arguscam/status/status_{dstr}.json'
 
 
