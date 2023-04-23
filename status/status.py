@@ -8,16 +8,22 @@ import datetime
 import sys
 import sensors
 
+
 def get_process_output(proc):
-    process = subprocess.Popen(proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+        proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, err = process.communicate()
     return output
 
-dtime = datetime.datetime.now()
-dstr = datetime.datetime.now().strftime('%Y%m%d-%H%M')
-os.makedirs('/home/arguscam/status/', exist_ok=True)
-outputfile = f'/home/arguscam/status/status_{dstr}.json'
 
+try:
+    outputfile = sys.argv[1]
+except:
+    #dtime = datetime.datetime.now()
+    #dstr = datetime.datetime.now().strftime('%Y%m%d-%H%M')
+    #os.makedirs('/home/arguscam/status/', exist_ok=True)
+    #outputfile = f'/home/arguscam/status/status_{dstr}.json'
+    outputfile = f'status.json'
 
 status = {}
 
@@ -28,8 +34,10 @@ try:
         try:
             dirs = os.listdir(imagedir)
             dirs.sort()
-            if 'cal' in dirs: dirs.remove('cal')
-            if 'videos' in dirs: dirs.remove('videos')
+            if 'cal' in dirs:
+                dirs.remove('cal')
+            if 'videos' in dirs:
+                dirs.remove('videos')
             if len(dirs) == 0:
                 # No valid image directories
                 status['recent_image'] = None
@@ -49,38 +57,45 @@ status['status_time'] = datetime.datetime.now().isoformat()
 df_output = get_process_output(['df', '-h'])
 try:
     df_usb = [b for b in
-              [ a for a in df_output.decode('ascii').split('\n')
-                if 'USB' in a][0].split(' ')
+              [a for a in df_output.decode('ascii').split('\n')
+               if 'USB' in a][0].split(' ')
               if b != '']
     status['freespace'] = df_usb[3]
 except IndexError:
     status['freespace'] = None
-    
+
 df_output = get_process_output(['df'])
 try:
     df_usb = [b for b in
-              [ a for a in df_output.decode('ascii').split('\n')
-                if 'USB' in a][0].split(' ')
+              [a for a in df_output.decode('ascii').split('\n')
+               if 'USB' in a][0].split(' ')
               if b != '']
     status['usb_usage'] = f'{100*float(df_usb[2])/float(df_usb[1]):.3f}%'
 except IndexError:
     status['usb_usage'] = None
 
-    
+
 # Timelapse status
-timelapse_running = [b for b in
-                     get_process_output(['systemctl', 'show', 'argus-camera-timelapse']).decode('ascii').split('\n')
-                     if b.startswith('ActiveState=')][0].split('=')[1]
+timelapse_running = [
+    b for b in
+    get_process_output(
+        ['systemctl', 'show', 'argus-camera-timelapse']
+    ).decode('ascii').split('\n')
+    if b.startswith('ActiveState=')][0].split('=')[1]
 status['timelapse_status'] = timelapse_running
-timelapse_timer = [b for b in
-                   get_process_output(['systemctl', 'show', 'argus-camera-timelapse.timer']).decode('ascii').split('\n')
-                   if b.startswith('ActiveState=')][0].split('=')[1]
+timelapse_timer = [
+    b for b in
+    get_process_output(
+        ['systemctl', 'show', 'argus-camera-timelapse.timer']
+    ).decode('ascii').split('\n')
+    if b.startswith('ActiveState=')][0].split('=')[1]
 status['timelapse_timer'] = timelapse_timer
 
 
 # GPS status - exit after 2 seconds (incase no GPS device is attached), should be enough for a TPV vector
 gps_output = get_process_output(['gpspipe', '-w', '-x 2']).decode('ascii')
-x  = re.search("mode\":(.),.*lat\":(\d*.\d*),.*lon\":(.*?\..*?),.*altHAE\":(.*?\..*?),.*altMSL\":(.*?\..*?),", gps_output)
+x = re.search(
+    "mode\":(.),.*lat\":(\d*.\d*),.*lon\":(.*?\..*?),.*altHAE\":(.*?\..*?),.*altMSL\":(.*?\..*?),", gps_output)
 try:
     status['gps_status'] = x.groups()[0]
 except:
@@ -100,15 +115,18 @@ except:
 # NTP status
 ntpd_output = get_process_output(['ntpq', '-p']).decode('ascii').split('\n')
 status['ntp_pps_status'] = [b for b in ntpd_output if 'PPS' in b][0][0]
-status['ntp_pps_checktime'] = list(filter(None, [b for b in ntpd_output if 'PPS' in b][0].split(' ')))[4]
+status['ntp_pps_checktime'] = list(
+    filter(None, [b for b in ntpd_output if 'PPS' in b][0].split(' ')))[4]
 status['ntp_gps_status'] = [b for b in ntpd_output if 'GPS' in b][0][0]
 try:
-    status['ntp_janet_status'] = [b for b in ntpd_output if 'ja.net' in b][0][0]
-    status['ntp_janet_checktime'] = list(filter(None, [b for b in ntpd_output if 'ja.net' in b][0].split(' ')))[4]
-except IndexError: # No network connection means no janet status
+    status['ntp_janet_status'] = [
+        b for b in ntpd_output if 'ja.net' in b][0][0]
+    status['ntp_janet_checktime'] = list(
+        filter(None, [b for b in ntpd_output if 'ja.net' in b][0].split(' ')))[4]
+except IndexError:  # No network connection means no janet status
     status['ntp_janet_checktime'] = None
     status['ntp_janet_status'] = None
-    
+
 try:
     # Sensors
     press = sensors.Pressure()
@@ -122,10 +140,11 @@ try:
     mag = sensors.Mag()
     md = mag.get_data()
     status.update(md)
-    
+
     status['accXangle'], status['accYangle'] = sensors.get_rotation_angles(acd)
     status['heading'] = sensors.get_heading(md)
-    status['tiltCompHeading'], status['pitch'], status['roll'] = sensors.tilt_compensated_heading(acd, md)
+    status['tiltCompHeading'], status['pitch'], status['roll'] = sensors.tilt_compensated_heading(
+        acd, md)
 except OSError:
     print('Sensors unavailable via I2C')
 
@@ -143,8 +162,9 @@ try:
 except:
     pass
 
-status['rpi_temp'] = get_process_output(['vcgencmd', 'measure_temp']).decode('ascii').strip()[5:-2]
-    
+status['rpi_temp'] = get_process_output(
+    ['vcgencmd', 'measure_temp']).decode('ascii').strip()[5:-2]
+
 with open(outputfile, 'w') as f:
     json.dump(status, f)
     f.write('\n')
