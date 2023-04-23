@@ -7,6 +7,15 @@ import json
 import datetime
 import sys
 import sensors
+from PIL import Image
+
+
+def thumbnail_create(img_filename, output_filename, max_dim=100):
+    im = Image.open(img_filename)
+    ratio = im.size[1]/im.size[0]
+    tbsize = max_dim, int(ratio*max_dim)
+    im.thumbnail(tbsize)
+    im.save(output_filename)
 
 
 def get_process_output(proc):
@@ -45,11 +54,17 @@ try:
             imagedir = os.path.join(imagedir, dirs[-1])
         except NotADirectoryError:
             status['recent_image'] = os.path.basename(imagedir)
+            try:
+                tbname = outputfile.replace('.json', '.jpg')
+                thumbnail_create(imagedir, tbname)
+                status['thumbnail'] = os.path.basename(tbname)
+            except:
+                status['thumbnail'] = None
             break
 except FileNotFoundError:
     # No USB storage
     status['recent_image'] = None
-    
+
 # Do now to avoid GPS issues with timing of status
 status['status_time'] = datetime.datetime.now().isoformat()
 
