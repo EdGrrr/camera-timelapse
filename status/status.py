@@ -89,6 +89,15 @@ try:
 except IndexError:
     status['usb_usage'] = None
 
+try:
+    df_sd = [b for b in
+             [a for a in df_output.decode('ascii').split('\n')
+              if 'root' in a][0].split(' ')
+             if b != '']
+    status['sd_usage'] = f'{100*float(df_sd[2])/float(df_sd[1]):.3f}%'
+except IndexError:
+    status['sd_usage'] = None
+
 
 # Timelapse status
 timelapse_running = [
