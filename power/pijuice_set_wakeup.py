@@ -14,8 +14,8 @@ import time
 while not os.path.exists('/dev/i2c-1'):
     time.sleep(0.1)
 
-# This would only be done at startup
-subprocess.call(["sudo", "hwclock", "--hctosys"])
+# This would only be done at startup, so probably not here
+# subprocess.call(["sudo", "hwclock", "--hctosys"])
 
 pj = pijuice.PiJuice(1, 0x14)
 
@@ -32,7 +32,13 @@ pj.rtcAlarm.SetTime({
     'subsecond': t.microsecond // 1000000
 })
 
-# Set alarm details
+# Sleep at 3% charge
+# This is set by the pijuice config file and service. Don't need to set here
+
+#Wakeup at 5% charge
+pj.power.SetWakeUpOnCharge(5, True)
+
+# Set alarm details in the abscence of anything else
 pj.rtcAlarm.ClearAlarmFlag()
 pj.rtcAlarm.SetAlarm({'minute_period': 10})
 pj.rtcAlarm.SetWakeupEnabled(True)
