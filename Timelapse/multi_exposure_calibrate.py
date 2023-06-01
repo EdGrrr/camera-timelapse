@@ -43,15 +43,19 @@ def wait_until(waittime, mindiff=0.01):
 shutter_speeds = [200]
 ss_label = ['A']
 
-# Site lon, lat, alt r calculating sun position
-site_lon, site_lat, site_alt = -0.12, 51.5, 30
-
 # Set the output folder
 folder = sys.argv[1]
 
 # Set timelapse prefix
 prefix = sys.argv[2]
 
+# Get the config file
+config_file = sys.argv[3]
+with open(sys.argv[3]) as f:
+    config = json.load(f)
+
+# Site lon, lat, alt r calculating sun position
+site_lon, site_lat, site_alt = config['site_lon_degE'], config['site_lat_degN'], config['site_alt_m']
 
 #Check if timelapse is already running, exit if so
 get_lock('timelapse')
@@ -66,15 +70,15 @@ endtime = datetime.datetime(endtime.year, endtime.month,
 az, sza1 = sunpos(now, site_lat, site_lon, site_alt)[:2]
 az, sza2 = sunpos(now+datetime.timedelta(minutes=10), site_lat, site_lon, site_alt)[:2]
 
-if (sza1>95) and (sza2>95):
+if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_deg']):
     # Sun is below horizon.
     # If called within 10 minutes of the hour, record a calibration triplet
     # This makes sure we only get one triplet per hour
     print('Sun below horizon')
-    if (now.minute < 10):
+    if (now.minute < 10) or (config['hourly_night_views']==False):
         print('Calibration triplet')
         stime = time()
-        with picamera.PiCamera(resolution = (1280, 960),
+        with picamera.PiCamera(resolution = config['resolution'],
                                framerate=Fraction(1, 6),
                                sensor_mode=3) as camera:
             camera.iso = 800
@@ -90,13 +94,17 @@ if (sza1>95) and (sza2>95):
                 waittime = datetime.datetime.utcnow()
                 camera.annotate_text = waittime.strftime('%Y-%m-%d_%H%M%S')
                 camera.capture('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y-%m-%d_%H%M%S'), i))
+
+    if config['power_manage']:
+        # Run shutdown commands here
+        pass
     exit()
 
 # Video images are only recorded if daytime
 stime = time()
 with picamera.PiCamera() as camera:
     print('Setting up camera')
-    camera.resolution = (1280, 960)
+    camera.resolution = config['resolution']
     stime = time()
     camera.iso = 100 # 100 is lowest valid value
 
@@ -105,7 +113,7 @@ with picamera.PiCamera() as camera:
     #camera.exposure_mode = 'off'
     camera.awb_mode = 'cloudy' # should set to constants
     camera.awb_mode = 'off'
-    camera.awb_gains = (1.87, 1.531)
+    camera.awb_gains = config['white_balance']
 
     camera.framerate = 30
     camera.annotate_background = picamera.Color('white')
@@ -127,5 +135,5 @@ with picamera.PiCamera() as camera:
             camera.capture('{}/{}{}.jpg'.format(folder, waittime.strftime('%Y-%m-%d_%H%M%S'), ssl))
             stime = time()
 
-        waittime += datetime.timedelta(seconds=5)
+        waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
         wait_until(waittime)

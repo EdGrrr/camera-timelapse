@@ -1,0 +1,13 @@
+{
+    "resolution": [1280, 960],
+    "white_balance": [1.87, 1.531],
+    "image_timedelta_seconds": 5,
+
+    "power_manage": true,
+    "sza_daylight_limit_deg": 95,
+    "hourly_night_views": true,
+
+    "site_lon_degE": 51.5,
+    "site_lat_degN": -0.12,
+    "site_alt_m": 30
+}
