@@ -98,7 +98,44 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
 
     if config['power_manage']:
         # Run shutdown commands here
-        pass
+        import pijuice
+        import os
+        import datetime
+
+        pj = pijuice.PiJuice(1, 0x14)
+
+        # Copy the system clock to the RTC
+        t = datetime.datetime.utcnow()
+        pj.rtcAlarm.SetTime({
+            'second': t.second,
+            'minute': t.minute,
+            'hour': t.hour,
+            'weekday': t.weekday() + 1,
+            'day': t.day,
+            'month': t.month,
+            'year': t.year,
+            'subsecond': t.microsecond // 1000000
+        })
+
+        pj.rtcAlarm.ClearAlarmFlag()
+        if config['hourly_night_views']:
+            # Wakeup at 57 min to hour
+            pj.rtcAlarm.SetAlarm({'minute': 57})
+        else:
+            # Wakeup at 7 minutes to 10 minute intervals
+            pj.rtcAlarm.SetAlarm({'minute': (((t.minutes+4)//10)*10+7)%60})
+
+        pj.rtcAlarm.SetWakeupEnabled(True)
+
+        # Remove power to PiJuice MCU IO pins
+        pj.power.SetSystemPowerSwitch(0)
+
+        # Remove 5V power to RPi after 20 seconds
+        pj.power.SetPowerOff(20)
+
+        # Shut down the RPi
+        os.system("sudo halt")
+
     exit()
 
 # Video images are only recorded if daytime
