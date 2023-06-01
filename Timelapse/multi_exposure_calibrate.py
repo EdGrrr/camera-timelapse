@@ -6,6 +6,7 @@ import socket
 import sys
 import numpy as np
 from sunposition import sunpos
+import json
 
 ###################
 # Other functions #

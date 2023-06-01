@@ -13,4 +13,4 @@ HOUR=$(date -u +"%H")
 FOLDER=${MAIN_FOLDER}/${DAY}/${HOUR}
 
 mkdir -p ${FOLDER}
-python3 ${SCRIPT_DIR}/multi_exposure_calibrate.py ${FOLDER} ${PREFIX}
+python3 ${SCRIPT_DIR}/multi_exposure_calibrate.py ${FOLDER} ${PREFIX} ${SCRIPT_DIR}/../config.json
