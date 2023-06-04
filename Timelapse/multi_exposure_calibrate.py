@@ -7,6 +7,7 @@ import sys
 import numpy as np
 from sunposition import sunpos
 import json
+import os
 
 ###################
 # Other functions #
@@ -61,6 +62,11 @@ site_lon, site_lat, site_alt = config['site_lon_degE'], config['site_lat_degN'],
 #Check if timelapse is already running, exit if so
 get_lock('timelapse')
 
+# Is the time likely correct?
+# I2C must be started to get RTC
+while not os.path.exists('/dev/i2c-1'):
+    time.sleep(1)
+
 now = datetime.datetime.utcnow()
 # Run until the next hour
 endtime = now + datetime.timedelta(hours=1)
@@ -101,6 +107,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
         import pijuice
         import os
         import datetime
+        import time
 
         pj = pijuice.PiJuice(1, 0x14)
 
@@ -120,10 +127,15 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
         pj.rtcAlarm.ClearAlarmFlag()
         if config['hourly_night_views']:
             # Wakeup at 57 min to hour
-            pj.rtcAlarm.SetAlarm({'minute': 57})
+            wakeupmin = 57
         else:
             # Wakeup at 7 minutes to 10 minute intervals
-            pj.rtcAlarm.SetAlarm({'minute': (((t.minutes+4)//10)*10+7)%60})
+            wakeupmin = (((t.minute+4)//10)*10+7)%60
+        pj.rtcAlarm.SetAlarm({'year': 'EVERY_YEAR',
+                              'month': 'EVERY_MONTH',
+                              'day': 'EVERY_DAY',
+                              'hour': 'EVERY_HOUR',
+                              'minute': wakeupmin})
 
         pj.rtcAlarm.SetWakeupEnabled(True)
 
@@ -133,8 +145,9 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
         # Remove 5V power to RPi after 20 seconds
         pj.power.SetPowerOff(20)
 
+        print(pj.rtcAlarm.GetAlarm())
         # Shut down the RPi
-        os.system("sudo halt")
+        os.system(f"sudo shutdown -h 'Restarting at {wakeupmin}'")
 
     exit()
 
