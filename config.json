@@ -4,10 +4,10 @@
     "image_timedelta_seconds": 5,
 
     "power_manage": true,
-    "sza_daylight_limit_deg": 95,
+    "sza_daylight_limit_deg": 75,
     "hourly_night_views": true,
 
-    "site_lon_degE": 51.5,
-    "site_lat_degN": -0.12,
+    "site_lon_degE": -0.12,
+    "site_lat_degN": 51.5,
     "site_alt_m": 30
 }
