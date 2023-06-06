@@ -71,7 +71,7 @@ now = datetime.datetime.utcnow()
 # Run until the next hour
 endtime = now + datetime.timedelta(hours=1)
 endtime = datetime.datetime(endtime.year, endtime.month,
-                            endtime.day, endtime.hour, 0, 0, 0)-datetime.timedelta(seconds=5)
+                            endtime.day, endtime.hour, 0, 0, 0)-datetime.timedelta(seconds=10)
 
 # Check the solar zenith angle
 az, sza1 = sunpos(now, site_lat, site_lon, site_alt)[:2]
@@ -152,6 +152,8 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
     exit()
 
 # Video images are only recorded if daytime
+import cv2 # This is slow so onl if we need it
+
 stime = time()
 with picamera.PiCamera() as camera:
     print('Setting up camera')
@@ -170,6 +172,11 @@ with picamera.PiCamera() as camera:
     camera.annotate_background = picamera.Color('white')
     camera.annotate_foreground = picamera.Color('black')
     camera.annotate_text_size = 12
+
+    videos = {}
+    for ssl in ss_label:
+        video_name = f"{folder}/{now.strftime('%Y%m%d_%H%M')}_{ssl}.mp4"
+        videos[ssl] = cv2.VideoWriter(video_name, cv2.VideoWriter.fourcc(*'mp4v'), 25, config['resolution'])
     
     now = datetime.datetime.utcnow()
     waittime = now + datetime.timedelta(seconds=10)
@@ -183,8 +190,15 @@ with picamera.PiCamera() as camera:
         for ss, ssl in zip(shutter_speeds, ss_label):  
             camera.shutter_speed = ss
             camera.annotate_text = waittime.strftime('%Y-%m-%d_%H%M%S')
-            camera.capture('{}/{}{}.jpg'.format(folder, waittime.strftime('%Y-%m-%d_%H%M%S'), ssl))
+            img_filename = '{}/{}{}.jpg'.format(folder, waittime.strftime('%Y-%m-%d_%H%M%S'), ssl)
+            camera.capture(img_filename)
+            videos[ssl].write(cv2.imread(img_filename))
             stime = time()
 
         waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
         wait_until(waittime)
+
+    print('Closedown videos')
+    cv2.destroyAllWindows()
+    for ssl in ss_label:
+        videos[ssl].release()
