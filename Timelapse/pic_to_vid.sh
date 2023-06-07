@@ -21,7 +21,7 @@ cd ${FOLDER}
 #     fi
 # done
 mv *_CAL*.jpg ${MAIN_FOLDER}/cal/${DAY} 2> /dev/null
-mv *.mp4 ${MAIN_FOLDER}/video/${DAY} 2> /dev/null
+mv *.mp4 ${MAIN_FOLDER}/videos/${DAY} 2> /dev/null
 
 cd ..
 # tar -zcvf ${HOUR}.tar.gz ${HOUR} 
