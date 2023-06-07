@@ -176,7 +176,7 @@ with picamera.PiCamera() as camera:
     videos = {}
     for ssl in ss_label:
         video_name = f"{folder}/{now.strftime('%Y%m%d_%H%M')}_{ssl}.mp4"
-        videos[ssl] = cv2.VideoWriter(video_name, cv2.VideoWriter.fourcc(*'mp4v'), 25, config['resolution'])
+        videos[ssl] = cv2.VideoWriter(video_name, cv2.VideoWriter.fourcc(*'mp4v'), 25, tuple(config['resolution']))
     
     now = datetime.datetime.utcnow()
     waittime = now + datetime.timedelta(seconds=10)
