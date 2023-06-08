@@ -82,7 +82,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
     # If called within 10 minutes of the hour, record a calibration triplet
     # This makes sure we only get one triplet per hour
     print('Sun below horizon')
-    if (now.minute < 10) or (config['hourly_night_views']==False):
+    if (now.minute < 10) or (config['hourly_night_views']==False) or (config['power_manage']):
         print('Calibration triplet')
         stime = time()
         with picamera.PiCamera(resolution = config['resolution'],
