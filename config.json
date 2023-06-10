@@ -1,6 +1,6 @@
 {
-    "resolution": [1280, 960],
-    "white_balance": [1.87, 1.531],
+    "resolution": [3040, 3040],
+    "white_balance": [3.71, 1.367],
     "image_timedelta_seconds": 5,
 
     "power_manage": true,
