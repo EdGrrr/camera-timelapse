@@ -45,6 +45,8 @@ try:
             dirs.sort()
             if 'cal' in dirs:
                 dirs.remove('cal')
+            if 'calibration' in dirs:
+                dirs.remove('calibration')
             if 'videos' in dirs:
                 dirs.remove('videos')
             if len(dirs) == 0:
