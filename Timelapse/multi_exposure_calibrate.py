@@ -152,7 +152,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
     exit()
 
 # Video images are only recorded if daytime
-import cv2 # This is slow so onl if we need it
+import cv2 # This is slow so only if we need it
 
 stime = time()
 with picamera.PiCamera() as camera:
