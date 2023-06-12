@@ -53,7 +53,6 @@ try:
                 # No valid image directories
                 status['recent_image'] = None
                 break
-            dirs = [d for d in dirs if '.mp4' not in d]
             imagedir = os.path.join(imagedir, dirs[-1])
         except NotADirectoryError:
             status['recent_image'] = os.path.basename(imagedir)
