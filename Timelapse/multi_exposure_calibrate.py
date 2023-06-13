@@ -151,7 +151,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
 
         print(pj.rtcAlarm.GetAlarm())
         # Shut down the RPi
-        os.system(f"sudo shutdown -h now 'Restarting at {wakeupmin}'")
+        #os.system(f"sudo shutdown -h now 'Restarting at {wakeupmin}'")
 
     exit()
 
