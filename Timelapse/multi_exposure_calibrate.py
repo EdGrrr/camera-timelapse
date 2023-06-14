@@ -112,7 +112,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
         pj = pijuice.PiJuice(1, 0x14)
 
         # Ensure there is a PiJuice attached, otherwise the shutdown is fatal!
-	if pj.status.GetStatus()['error'] != 'NO_ERROR':
+        if pj.status.GetStatus()['error'] != 'NO_ERROR':
             raise IOError('PiJuice cannot be contacted')
 
         # Copy the system clock to the RTC
