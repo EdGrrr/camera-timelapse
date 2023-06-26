@@ -156,10 +156,6 @@ except IndexError:  # No network connection means no janet status
 
 try:
     # Sensors
-    press = sensors.Pressure()
-    pd = press.get_data()
-    status.update(pd)
-
     acc = sensors.AccelGyro()
     acd = acc.get_data()
     status.update(acd)
@@ -172,6 +168,11 @@ try:
     status['heading'] = sensors.get_heading(md)
     status['tiltCompHeading'], status['pitch'], status['roll'] = sensors.tilt_compensated_heading(
         acd, md)
+
+    # Pressure last as some units have it failing
+    press = sensors.Pressure()
+    pd = press.get_data()
+    status.update(pd)
 except OSError:
     print('Sensors unavailable via I2C')
 
