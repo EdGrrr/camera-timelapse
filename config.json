@@ -3,11 +3,11 @@
     "white_balance": [1.87, 1.531],
     "image_timedelta_seconds": 5,
 
-    "power_manage": false,
+    "power_manage": true,
     "camera_heater": true,
     "camera_heater_time": 300,
     "sza_daylight_limit_deg": 75,
-    "hourly_night_views": false,
+    "hourly_night_views": true,
 
     "site_lon_degE": -0.12,
     "site_lat_degN": 51.5,
