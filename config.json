@@ -4,7 +4,7 @@
     "image_timedelta_seconds": 5,
 
     "power_manage": true,
-    "camera_heater": true,
+    "camera_heater": false,
     "camera_heater_time": 300,
     "sza_daylight_limit_deg": 75,
     "hourly_night_views": true,
