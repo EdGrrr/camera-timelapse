@@ -4,8 +4,10 @@
     "image_timedelta_seconds": 5,
 
     "power_manage": false,
+    "camera_heater": true,
+    "camera_heater_time": 300,
     "sza_daylight_limit_deg": 75,
-    "hourly_night_views": true,
+    "hourly_night_views": false,
 
     "site_lon_degE": -0.12,
     "site_lat_degN": 51.5,

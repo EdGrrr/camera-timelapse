@@ -83,6 +83,20 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
     # This makes sure we only get one triplet per hour
     print('Sun below horizon')
     if (now.minute < 10) or (config['hourly_night_views']==False) or (config['power_manage']):
+        if config['camera_heater']:
+            print('Heating camera')
+            stime = time()
+            with picamera.PiCamera(resolution=(1280,720),
+                                   framerate=180,
+                                   sensor_mode=6) as camera:
+                stream = picamera.PiCameraCircularIO(camera, seconds=1)
+                camera.start_recording(stream, format="mjpeg")
+
+                while True:
+                    camera.wait_recording(1)
+                    if time() > stime+config['camera_heater_time']:
+                        break
+
         print('Calibration triplet')
         stime = time()
         with picamera.PiCamera(resolution = config['resolution'],
