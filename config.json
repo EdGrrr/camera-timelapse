@@ -3,7 +3,7 @@
     "white_balance": [1.87, 1.531],
     "image_timedelta_seconds": 5,
 
-    "power_manage": true,
+    "power_manage": false,
     "sza_daylight_limit_deg": 75,
     "hourly_night_views": true,
 
