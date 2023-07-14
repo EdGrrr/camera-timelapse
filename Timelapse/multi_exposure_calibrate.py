@@ -163,8 +163,9 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                 im = Image.fromarray(data)
                 waittime = datetime.datetime.utcnow()
                 im.save('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y%m%dT%H%M%S'), i))
-                update_latest('CAL{}_{}'.format(i, waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
-                thumbnail_create(data, thumbnail_name)
+
+            update_latest('CAL_{}'.format(waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
+            thumbnail_create(data, thumbnail_name)
 
     if config['power_manage']:
         # Run shutdown commands here
@@ -270,7 +271,7 @@ with picamera2.PiCamera2() as camera:
             data = timestamp_image(time(), data, ts_factor)
 
             videos[ssl].write(data)
-            update_latest('IMG{}_{}'.format(ssl, waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
+            update_latest('IMG-{}_{}'.format(ssl, waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
 
             if waittime.second == 0:
                 thumbnail_create(data, thumbnail_name)
