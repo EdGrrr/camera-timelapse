@@ -39,6 +39,28 @@ def wait_until(waittime, mindiff=0.01):
     return True
 
 
+def timestamp_image(tstamp, data, ts_factor):
+    stamp = int(tstamp)
+    ts_array = np.array(list(np.binary_repr(stamp))).astype('int')
+    ts_array = ts_array[None, :].repeat(ts_factor, axis=1).repeat(ts_factor, axis=0)
+    data[:ts_factor, :(31*ts_factor), :] = 255*ts_array[:, :, None]
+    return data
+
+
+def update_latest(filename, latest_location):
+    with open(latest_location) as f:
+        f.write(filename)
+    f.close()
+
+
+def thumbnail_create(data, output_filename, max_dim=100):
+    im = Image.fromarray(data)
+    ratio = im.size[1]/im.size[0]
+    tbsize = max_dim, int(ratio*max_dim)
+    im.thumbnail(tbsize)
+    im.save(output_filename)
+
+
 # This script captures exposures with varying shutter time.
 # The frame rate needs to be longer than the exposure or it won't work.
 # The capture takes as long as the frame rate, so reducing the frame rate saves time for quick exposures.
@@ -64,6 +86,10 @@ prefix = sys.argv[2]
 config_file = sys.argv[3]
 with open(sys.argv[3]) as f:
     config = json.load(f)
+
+# Filename for the latest file
+latest_location = sys.argv[4]+'/latest.txt'
+thumbnail_name = sys.argv[4]+'/thumbnail.jpg'
 
 # Site lon, lat, alt r calculating sun position
 site_lon, site_lat, site_alt = config['site_lon_degE'], config['site_lat_degN'], config['site_alt_m']
@@ -132,14 +158,12 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                 request.release()
 
                 # Timestamp
-                stamp = int(time())
-                ts_array = np.array(list(np.binary_repr(stamp))).astype('int')
-                ts_array = ts_array[None, :].repeat(ts_factor, axis=1).repeat(ts_factor, axis=0)
-                data[:ts_factor, :(31*ts_factor), :] = 255*ts_array[:, :, None]
+                data = timestamp_image(data, time(), ts_factor)
 
                 im = Image.fromarray(data)
                 waittime = datetime.datetime.utcnow()
-                im.save('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y-%m-%d_%H%M%S'), i))
+                im.save('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y%m%dT%H%M%S'), i))
+                update_latest('CAL{}_{}'.format(waittime.strftime('%Y%m%dT%H%M%S'), i), latest_location)
 
 
     if config['power_manage']:
@@ -243,12 +267,13 @@ with picamera2.PiCamera2() as camera:
             request.release()
 
             # Timestamp
-            stamp = int(time())
-            ts_array = np.array(list(np.binary_repr(stamp))).astype('int')
-            ts_array = ts_array[None, :].repeat(ts_factor, axis=1).repeat(ts_factor, axis=0)
-            data[:ts_factor, :(31*ts_factor), :] = 255*ts_array[:, :, None]
+            data = timestamp_image(data, time(), ts_factor)
 
             videos[ssl].write(data)
+            update_latest('IMG{}_{}'.format(ssl, waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
+
+            if waittime.second == 0:
+                thumbnail_create(data, thumbnail_name)
             stime = time()
 
         waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
