@@ -49,7 +49,7 @@ def timestamp_image(tstamp, data, ts_factor):
 
 def update_latest(filename, latest_location):
     with open(latest_location, 'w') as f:
-        f.write(filename)
+        f.write(filename+'\n')
     f.close()
 
 
@@ -163,7 +163,8 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                 im = Image.fromarray(data)
                 waittime = datetime.datetime.utcnow()
                 im.save('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y%m%dT%H%M%S'), i))
-                update_latest('CAL{}_{}'.format(waittime.strftime('%Y%m%dT%H%M%S'), i), latest_location)
+                update_latest('CAL{}_{}'.format(i, waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
+                thumbnail_create(data, thumbnail_name)
 
     if config['power_manage']:
         # Run shutdown commands here
