@@ -48,7 +48,7 @@ def timestamp_image(tstamp, data, ts_factor):
 
 
 def update_latest(filename, latest_location):
-    with open(latest_location) as f:
+    with open(latest_location, 'w') as f:
         f.write(filename)
     f.close()
 
