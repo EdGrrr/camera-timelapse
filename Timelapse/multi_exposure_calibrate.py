@@ -13,6 +13,7 @@ import os
 # Other functions #
 ###################
 
+
 def get_lock(process_name):
     # Without holding a reference to our socket somewhere it gets garbage
     # collected when the function exits
@@ -29,6 +30,7 @@ def get_lock(process_name):
         print('Timelapse already running')
         sys.exit()
 
+        
 def wait_until(waittime, mindiff=0.01):
     t = datetime.datetime.utcnow()
     tdiff = (waittime-t).total_seconds()
@@ -36,12 +38,14 @@ def wait_until(waittime, mindiff=0.01):
         sleep(tdiff)
     return True
 
+
 # This script captures exposures with varying shutter time.
 # The frame rate needs to be longer than the exposure or it won't work.
 # The capture takes as long as the frame rate, so reducing the frame rate saves time for quick exposures.
 # Go shortest to longest
 #shutter_speeds = [200, 800, 3200]
 #ss_label = ['A', 'B', 'C']
+
 shutter_speeds = [200]
 assert(len(shutter_speeds) == 1)
 
@@ -135,7 +139,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
 
                 im = Image.fromarray(data)
                 waittime = datetime.datetime.utcnow()
-                im.save'{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y-%m-%d_%H%M%S'), i))
+                im.save('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y-%m-%d_%H%M%S'), i))
 
     if config['power_manage']:
         # Run shutdown commands here
