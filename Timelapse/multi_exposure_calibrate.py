@@ -207,7 +207,7 @@ with picamera2.PiCamera2() as camera:
             main={'size': config['resolution']}
         ))
     camera.set_controls({'ExposureTime': shutter_speeds[0],
-                         'AeEanble': False,
+                         'AeEnable': False,
                          'AnalogueGain': 1.0, # AG is approximately ISO/100
                          'AwbEnable': False,  # Turn off AWB
                          'ColourGains': config['white_balance'],
