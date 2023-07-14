@@ -158,7 +158,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                 request.release()
 
                 # Timestamp
-                data = timestamp_image(data, time(), ts_factor)
+                data = timestamp_image(time(), data, ts_factor)
 
                 im = Image.fromarray(data)
                 waittime = datetime.datetime.utcnow()
@@ -267,7 +267,7 @@ with picamera2.PiCamera2() as camera:
             request.release()
 
             # Timestamp
-            data = timestamp_image(data, time(), ts_factor)
+            data = timestamp_image(time(), data, ts_factor)
 
             videos[ssl].write(data)
             update_latest('IMG{}_{}'.format(ssl, waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
