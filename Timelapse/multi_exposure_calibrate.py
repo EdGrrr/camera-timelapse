@@ -275,9 +275,11 @@ with picamera2.Picamera2() as camera:
 
             if waittime.second == 0:
                 thumbnail_create(data, thumbnail_name)
-            stime = time()
 
         waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
+        if datetime.datetime.now()>waittime:
+            print(f'Slippage at {waittime}')
+            waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
         wait_until(waittime)
 
     print('Closedown videos')
