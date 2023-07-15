@@ -224,7 +224,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
 import cv2 # This is slow so only if we need it
 
 stime = time()
-with picamera2.PiCamera2() as camera:
+with picamera2.Picamera2() as camera:
     print('Setting up camera')
     camera.configure(
         camera.create_still_configuration(
