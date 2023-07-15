@@ -203,7 +203,7 @@ print('Status written successfully')
 # Status upload
 statuspath = os.path.expandvars('${HOME}/camera_output')+'/latest.txt'
 with open(statuspath, 'r') as file:
-    status['recent_image'] = file.read().strip()
+    status['recent_image'] = file.read().strip().split(' ')[0]
 try:
     r = requests.post('http://10.0.0.1:5010/camera_data', json=status, timeout=15)
     print(r.status_code)
@@ -214,9 +214,9 @@ except requests.ConnectionError:
     print('Status upload failed: No connection')
 
 # Image upload
-camstr = '-'.join(get_process_output(['hotname']).split('-')[1:])
+camstr = '-'.join(get_process_output(['hostname']).decode('ascii').strip().split('-')[1:])
 data = {'camera': camstr}
-imagepath = os.path.expandvars('${HOME}/camera_output')+'/latest.jpg'
+imagepath = os.path.expandvars('${HOME}/camera_output')+'/thumbnail.jpg'
 
 with open(imagepath, mode='rb') as file:
     img = file.read()
