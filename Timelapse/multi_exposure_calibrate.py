@@ -99,26 +99,26 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
 
         print('Calibration triplet')
         stime = time()
-        with picamera.PiCamera(resolution = config['resolution'],
-                               framerate=Fraction(1, 6),
-                               sensor_mode=3) as camera:
-            camera.iso = 800
-            camera.annotate_background = picamera.Color('white')
-            camera.annotate_foreground = picamera.Color('black')
-            camera.annotate_text_size = 12
-            camera.shutter_speed = 6000000
-            camera.exposure_mode = 'night' # Need to fix gain values somehow!
-            camera.awb_mode = 'off'
-            camera.awb_gains = (1.73, 1.664)
-            for i in range(1, 4):
-                # Take a few images, just incase of vehicles etc
-                waittime = datetime.datetime.utcnow()
-                camera.annotate_text = waittime.strftime('%Y-%m-%d_%H%M%S')
-                try:
+        try:
+            with picamera.PiCamera(resolution = config['resolution'],
+                                   framerate=Fraction(1, 6),
+                                   sensor_mode=3) as camera:
+                camera.iso = 800
+                camera.annotate_background = picamera.Color('white')
+                camera.annotate_foreground = picamera.Color('black')
+                camera.annotate_text_size = 12
+                camera.shutter_speed = 6000000
+                camera.exposure_mode = 'night' # Need to fix gain values somehow!
+                camera.awb_mode = 'off'
+                camera.awb_gains = (1.73, 1.664)
+                for i in range(1, 4):
+                    # Take a few images, just incase of vehicles etc
+                    waittime = datetime.datetime.utcnow()
+                    camera.annotate_text = waittime.strftime('%Y-%m-%d_%H%M%S')
                     camera.capture('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y-%m-%d_%H%M%S'), i))
-                except:
-                    # Temporary fix for now - otherwise camera stays on all night
-                    pass
+        except:
+            # Temporary fix for now - otherwise camera stays on all night
+            pass
 
     if config['power_manage']:
         # Run shutdown commands here
