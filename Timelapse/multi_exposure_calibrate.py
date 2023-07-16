@@ -114,7 +114,11 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                 # Take a few images, just incase of vehicles etc
                 waittime = datetime.datetime.utcnow()
                 camera.annotate_text = waittime.strftime('%Y-%m-%d_%H%M%S')
-                camera.capture('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y-%m-%d_%H%M%S'), i))
+                try:
+                    camera.capture('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y-%m-%d_%H%M%S'), i))
+                except:
+                    # Temporary fix for now - otherwise camera stays on all night
+                    pass
 
     if config['power_manage']:
         # Run shutdown commands here
