@@ -168,7 +168,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                 update_latest('CAL_{}'.format(waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
                 thumbnail_create(data, thumbnail_name)
         except:
-            # Stop camera running all night
+            # FIX: Stop camera running all night
             pass
 
     if config['power_manage']:
