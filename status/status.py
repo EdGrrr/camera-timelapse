@@ -51,6 +51,8 @@ try:
                 dirs.remove('calibration')
             if 'videos' in dirs:
                 dirs.remove('videos')
+            if 'thumbnail.jpg' in dirs:
+                dirs.remove('thumbnail.jpg')
             if len(dirs) == 0:
                 # No valid image directories
                 status['recent_image'] = None
