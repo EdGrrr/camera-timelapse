@@ -67,6 +67,11 @@ except FileNotFoundError:
     # No USB storage
     status['recent_image'] = None
 
+statuspath = os.path.expandvars('${HOME}/camera_output')+'/latest.txt'
+with open(statuspath, 'r') as file:
+    status['recent_image'] = file.read().strip().split(' ')[0]
+status['thumbnail'] = 'thumbnail.jpg'
+    
 # Do now to avoid GPS issues with timing of status
 status['status_time'] = datetime.datetime.now().isoformat()
 
