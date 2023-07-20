@@ -45,14 +45,9 @@ try:
         try:
             dirs = os.listdir(imagedir)
             dirs.sort()
-            if 'cal' in dirs:
-                dirs.remove('cal')
-            if 'calibration' in dirs:
-                dirs.remove('calibration')
-            if 'videos' in dirs:
-                dirs.remove('videos')
-            if 'thumbnail.jpg' in dirs:
-                dirs.remove('thumbnail.jpg')
+            for exclude in ['cal', 'calibration', 'videos', 'thumbnail.jpg', 'latest.txt']:
+                if exclude in dirs:
+                    dirs.remove(exclude)
             if len(dirs) == 0:
                 # No valid image directories
                 status['recent_image'] = None
