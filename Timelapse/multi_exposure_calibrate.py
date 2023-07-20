@@ -134,38 +134,42 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
 
         print('Calibration triplet')
         stime = time()
-        with picamera2.Picamera2() as camera:
-            camera.configure(
-                camera.create_still_configuration(
-                    queue=False,
-                    display=None,  # No preview window
-                    main={'size': config['resolution']}
-                ))
-            camera.set_controls({'ExposureTime': 6000000,
-                                 'AeEnable': False,
-                                 'AnalogueGain': 8.0, # AG is approximately ISO/100
-                                 'AwbEnable': False,  # Turn off AWB
-                                 'ColourGains': config['white_balance'],
-                                 })
-            camera.start()
-            # Wait for camera to start
-            sleep(2)
+        try:
+            with picamera2.Picamera2() as camera:
+                camera.configure(
+                    camera.create_still_configuration(
+                        queue=False,
+                        display=None,  # No preview window
+                        main={'size': config['resolution']}
+                    ))
+                camera.set_controls({'ExposureTime': 6000000,
+                                     'AeEnable': False,
+                                     'AnalogueGain': 8.0, # AG is approximately ISO/100
+                                     'AwbEnable': False,  # Turn off AWB
+                                     'ColourGains': config['white_balance'],
+                                     })
+                camera.start()
+                # Wait for camera to start
+                sleep(2)
 
-            for i in range(1, 4):
-                request = camera.capture_request()
-                data = request.make_array('main')
-                metadata = request.get_metadata()
-                request.release()
+                for i in range(1, 4):
+                    request = camera.capture_request()
+                    data = request.make_array('main')
+                    metadata = request.get_metadata()
+                    request.release()
 
-                # Timestamp
-                data = timestamp_image(time(), data, ts_factor)
+                    # Timestamp
+                    data = timestamp_image(time(), data, ts_factor)
 
-                im = Image.fromarray(data)
-                waittime = datetime.datetime.utcnow()
-                im.save('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y%m%dT%H%M%S'), i))
+                    im = Image.fromarray(data)
+                    waittime = datetime.datetime.utcnow()
+                    im.save('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y%m%dT%H%M%S'), i))
 
-            update_latest('CAL_{}'.format(waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
-            thumbnail_create(data, thumbnail_name)
+                update_latest('CAL_{}'.format(waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
+                thumbnail_create(data, thumbnail_name)
+        except:
+            # Stop camera running all night
+            pass
 
     if config['power_manage']:
         # Run shutdown commands here
