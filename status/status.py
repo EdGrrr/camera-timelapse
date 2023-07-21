@@ -66,6 +66,9 @@ try:
 except FileNotFoundError:
     # No USB storage
     status['recent_image'] = None
+except IndexError:
+    # Other issues
+    status['recent_image'] = None
 
 statuspath = os.path.expandvars('${HOME}/camera_output')+'/latest.txt'
 with open(statuspath, 'r') as file:
