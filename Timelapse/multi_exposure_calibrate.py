@@ -274,7 +274,8 @@ with picamera2.Picamera2() as camera:
             # Timestamp
             data = timestamp_image(time(), data, ts_factor)
 
-            videos[ssl].write(data)
+            # Write video and correct for BGR-RGB
+            videos[ssl].write(data[:, :, ::-1])
             update_latest('IMG-{}_{}'.format(ssl, waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
 
             if waittime.second == 0:
