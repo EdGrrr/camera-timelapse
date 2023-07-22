@@ -68,7 +68,7 @@ def thumbnail_create(data, output_filename, max_dim=100):
 #shutter_speeds = [200, 800, 3200]
 #ss_label = ['A', 'B', 'C']
 
-shutter_speeds = [200]
+shutter_speeds = [400]
 assert(len(shutter_speeds) == 1)
 
 ss_label = ['A']
