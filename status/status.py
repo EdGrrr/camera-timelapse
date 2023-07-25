@@ -8,6 +8,8 @@ import datetime
 import sys
 import sensors
 from PIL import Image
+import requests
+import base64
 
 
 def thumbnail_create(img_filename, output_filename, max_dim=100):
@@ -43,12 +45,9 @@ try:
         try:
             dirs = os.listdir(imagedir)
             dirs.sort()
-            if 'cal' in dirs:
-                dirs.remove('cal')
-            if 'calibration' in dirs:
-                dirs.remove('calibration')
-            if 'videos' in dirs:
-                dirs.remove('videos')
+            for exclude in ['cal', 'calibration', 'videos', 'thumbnail.jpg', 'latest.txt']:
+                if exclude in dirs:
+                    dirs.remove(exclude)
             if len(dirs) == 0:
                 # No valid image directories
                 status['recent_image'] = None
@@ -67,6 +66,17 @@ try:
 except FileNotFoundError:
     # No USB storage
     status['recent_image'] = None
+except IndexError:
+    # Other issues
+    status['recent_image'] = None
+
+statuspath = os.path.expandvars('${HOME}/camera_output')+'/latest.txt'
+with open(statuspath, 'r') as file:
+    status['recent_image'] = file.read().strip().split(' ')[0]
+status['thumbnail'] = 'thumbnail.jpg'
+imagepath = os.path.expandvars('${HOME}/camera_output')+'/thumbnail.jpg'
+tbname = outputfile.replace('.json', '.jpg')
+os.system(f'cp {imagepath} {tbname}')
 
 # Do now to avoid GPS issues with timing of status
 status['status_time'] = datetime.datetime.now().isoformat()
@@ -197,3 +207,29 @@ with open(outputfile, 'w') as f:
     json.dump(status, f)
     f.write('\n')
 print('Status written successfully')
+
+# Status upload
+statuspath = os.path.expandvars('${HOME}/camera_output')+'/latest.txt'
+with open(statuspath, 'r') as file:
+    status['recent_image'] = file.read().strip().split(' ')[0]
+try:
+    r = requests.post('http://10.0.0.1:5010/camera_data', json=status, timeout=15)
+    print(r.status_code)
+except requests.Timeout:
+    # back off and retry
+    print('Status upload failed: Connection timed out')
+except requests.ConnectionError:
+    print('Status upload failed: No connection')
+
+# Image upload
+camstr = '-'.join(get_process_output(['hostname']).decode('ascii').strip().split('-')[1:])
+data = {'camera': camstr}
+imagepath = os.path.expandvars('${HOME}/camera_output')+'/thumbnail.jpg'
+
+with open(imagepath, mode='rb') as file:
+    img = file.read()
+
+data['img'] = base64.b64encode(img).decode('ascii')
+data['mtime'] = os.path.getmtime(imagepath)
+r = requests.post('http://10.0.0.1:5010/image_upload', json=data, timeout=15)
+

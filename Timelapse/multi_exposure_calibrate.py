@@ -1,6 +1,6 @@
-import picamera
+import picamera2
 from time import sleep, time
-from fractions import Fraction
+from PIL import Image
 import datetime
 import socket
 import sys
@@ -13,14 +13,15 @@ import os
 # Other functions #
 ###################
 
+
 def get_lock(process_name):
     # Without holding a reference to our socket somewhere it gets garbage
     # collected when the function exits
     get_lock._lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     print('Testing for exisiting process ... ', end='')
     try:
-        # The null byte (\0) means the socket is created 
-        # in the abstract namespace instead of being created 
+        # The null byte (\0) means the socket is created
+        # in the abstract namespace instead of being created
         # on the file system itself.
         # Works only in Linux
         get_lock._lock_socket.bind('\0' + process_name)
@@ -29,21 +30,51 @@ def get_lock(process_name):
         print('Timelapse already running')
         sys.exit()
 
+        
 def wait_until(waittime, mindiff=0.01):
     t = datetime.datetime.utcnow()
     tdiff = (waittime-t).total_seconds()
     if tdiff > mindiff:
         sleep(tdiff)
     return True
-    
-# This script captures exposures with varying shutter time. 
-# The frame rate needs to be longer than the exposure or it won't work. 
+
+
+def timestamp_image(tstamp, data, ts_factor):
+    stamp = int(tstamp)
+    ts_array = np.array(list(np.binary_repr(stamp))).astype('int')
+    ts_array = ts_array[None, :].repeat(ts_factor, axis=1).repeat(ts_factor, axis=0)
+    data[:ts_factor, :(31*ts_factor), :] = 255*ts_array[:, :, None]
+    return data
+
+
+def update_latest(filename, latest_location):
+    with open(latest_location, 'w') as f:
+        f.write(filename+'\n')
+    f.close()
+
+
+def thumbnail_create(data, output_filename, max_dim=100):
+    im = Image.fromarray(data)
+    ratio = im.size[1]/im.size[0]
+    tbsize = max_dim, int(ratio*max_dim)
+    im.thumbnail(tbsize)
+    im.save(output_filename)
+
+
+# This script captures exposures with varying shutter time.
+# The frame rate needs to be longer than the exposure or it won't work.
 # The capture takes as long as the frame rate, so reducing the frame rate saves time for quick exposures.
 # Go shortest to longest
 #shutter_speeds = [200, 800, 3200]
 #ss_label = ['A', 'B', 'C']
-shutter_speeds = [200]
+
+shutter_speeds = [400]
+assert(len(shutter_speeds) == 1)
+
 ss_label = ['A']
+
+# Size of the timestamp label
+ts_factor = 4
 
 # Set the output folder
 folder = sys.argv[1]
@@ -56,6 +87,10 @@ config_file = sys.argv[3]
 with open(sys.argv[3]) as f:
     config = json.load(f)
 
+# Filename for the latest file
+latest_location = sys.argv[4]+'/latest.txt'
+thumbnail_name = sys.argv[4]+'/thumbnail.jpg'
+
 # Site lon, lat, alt r calculating sun position
 site_lon, site_lat, site_alt = config['site_lon_degE'], config['site_lat_degN'], config['site_alt_m']
 
@@ -65,7 +100,7 @@ get_lock('timelapse')
 # Is the time likely correct?
 # I2C must be started to get RTC
 while not os.path.exists('/dev/i2c-1'):
-    time.sleep(1)
+    sleep(1)
 
 now = datetime.datetime.utcnow()
 # Run until the next hour
@@ -83,24 +118,58 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
     # This makes sure we only get one triplet per hour
     print('Sun below horizon')
     if (now.minute < 10) or (config['hourly_night_views']==False) or (config['power_manage']):
+        if config['camera_heater']:
+            print('Heating camera')
+            stime = time()
+            # with picamera.PiCamera(resolution=(1280,720),
+            #                        framerate=180,
+            #                        sensor_mode=6) as camera:
+            #     stream = picamera.PiCameraCircularIO(camera, seconds=1)
+            #     camera.start_recording(stream, format="mjpeg")
+
+            #     while True:
+            #         camera.wait_recording(1)
+            #         if time() > stime+config['camera_heater_time']:
+            #             break
+
         print('Calibration triplet')
         stime = time()
-        with picamera.PiCamera(resolution = config['resolution'],
-                               framerate=Fraction(1, 6),
-                               sensor_mode=3) as camera:
-            camera.iso = 800
-            camera.annotate_background = picamera.Color('white')
-            camera.annotate_foreground = picamera.Color('black')
-            camera.annotate_text_size = 12
-            camera.shutter_speed = 6000000
-            camera.exposure_mode = 'night' # Need to fix gain values somehow!
-            camera.awb_mode = 'off'
-            camera.awb_gains = (1.73, 1.664)
-            for i in range(1, 4):
-                # Take a few images, just incase of vehicles etc
-                waittime = datetime.datetime.utcnow()
-                camera.annotate_text = waittime.strftime('%Y-%m-%d_%H%M%S')
-                camera.capture('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y-%m-%d_%H%M%S'), i))
+        try:
+            with picamera2.Picamera2() as camera:
+                camera.configure(
+                    camera.create_still_configuration(
+                        queue=False,
+                        display=None,  # No preview window
+                        main={'size': config['resolution']}
+                    ))
+                camera.set_controls({'ExposureTime': 6000000,
+                                     'AeEnable': False,
+                                     'AnalogueGain': 8.0, # AG is approximately ISO/100
+                                     'AwbEnable': False,  # Turn off AWB
+                                     'ColourGains': config['white_balance'],
+                                     })
+                camera.start()
+                # Wait for camera to start
+                sleep(2)
+
+                for i in range(1, 4):
+                    request = camera.capture_request()
+                    data = request.make_array('main')
+                    metadata = request.get_metadata()
+                    request.release()
+
+                    # Timestamp
+                    data = timestamp_image(time(), data, ts_factor)
+
+                    im = Image.fromarray(data)
+                    waittime = datetime.datetime.utcnow()
+                    im.save('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y%m%dT%H%M%S'), i))
+
+                update_latest('CAL_{}'.format(waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
+                thumbnail_create(data, thumbnail_name)
+        except:
+            # FIX: Stop camera running all night
+            pass
 
     if config['power_manage']:
         # Run shutdown commands here
@@ -159,23 +228,23 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
 import cv2 # This is slow so only if we need it
 
 stime = time()
-with picamera.PiCamera() as camera:
+with picamera2.Picamera2() as camera:
     print('Setting up camera')
-    camera.resolution = config['resolution']
+    camera.configure(
+        camera.create_still_configuration(
+            queue=False,   # Only get a frame when it is requested
+            display=None,  # No preview window
+            main={'size': config['resolution']}
+        ))
+    camera.set_controls({'ExposureTime': shutter_speeds[0],
+                         'AeEnable': False,
+                         'AnalogueGain': 1.0, # AG is approximately ISO/100
+                         'AwbEnable': False,  # Turn off AWB
+                         'ColourGains': config['white_balance'],
+                         })
+    camera.start()
+    
     stime = time()
-    camera.iso = 100 # 100 is lowest valid value
-
-    # Need to set analog and digital gains. Possibly following this?
-    # https://gist.github.com/rwb27/a23808e9f4008b48de95692a38ddaa08/
-    #camera.exposure_mode = 'off'
-    camera.awb_mode = 'cloudy' # should set to constants
-    camera.awb_mode = 'off'
-    camera.awb_gains = config['white_balance']
-
-    camera.framerate = 30
-    camera.annotate_background = picamera.Color('white')
-    camera.annotate_foreground = picamera.Color('black')
-    camera.annotate_text_size = 12
 
     now = datetime.datetime.utcnow()
     waittime = now + datetime.timedelta(seconds=10)
@@ -187,21 +256,35 @@ with picamera.PiCamera() as camera:
     for ssl in ss_label:
         video_name = f"{folder}/{prefix}_{waittime.strftime('%Y%m%d_%H%M%S')}_{ssl}.mp4"
         videos[ssl] = cv2.VideoWriter(video_name, cv2.VideoWriter.fourcc(*'mp4v'), 25, tuple(config['resolution']))
-    
 
     print('Waiting to start')
     wait_until(waittime)
     print('Begin images')
     while datetime.datetime.utcnow()<endtime:
-        for ss, ssl in zip(shutter_speeds, ss_label):  
-            camera.shutter_speed = ss
-            camera.annotate_text = waittime.strftime('%Y-%m-%d_%H%M%S')
+        for ss, ssl in zip(shutter_speeds, ss_label):
+            # camera.shutter_speed = ss
+            # camera.annotate_text = waittime.strftime('%Y-%m-%d_%H%M%S')
             img_filename = '{}/{}{}.jpg'.format(folder, waittime.strftime('%Y-%m-%d_%H%M%S'), ssl)
-            camera.capture(img_filename)
-            videos[ssl].write(cv2.imread(img_filename))
-            stime = time()
+
+            request = camera.capture_request()
+            data = request.make_array('main')
+            metadata = request.get_metadata()
+            request.release()
+
+            # Timestamp
+            data = timestamp_image(time(), data, ts_factor)
+
+            # Write video and correct for BGR-RGB
+            videos[ssl].write(data[:, :, ::-1])
+            update_latest('IMG-{}_{}'.format(ssl, waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
+
+            if waittime.second == 0:
+                thumbnail_create(data, thumbnail_name)
 
         waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
+        if datetime.datetime.now()>waittime:
+            print(f'Slippage at {waittime}')
+            waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
         wait_until(waittime)
 
     print('Closedown videos')
