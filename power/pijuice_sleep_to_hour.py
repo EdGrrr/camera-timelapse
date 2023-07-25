@@ -36,4 +36,4 @@ pj.power.SetPowerOff(20)
 
 # Shut down the RPi
 print(pj.rtcAlarm.GetAlarm())
-os.system(f"sudo shutdown -h now 'Restarting at {wakeupmin}'")
+os.system(f"sudo shutdown -h now 'Restarting at 57'")
