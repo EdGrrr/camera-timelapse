@@ -143,7 +143,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                         main={'size': config['resolution']}
                     ))
                 camera.set_controls({'ExposureTime': 6000000,
-                                     'AeEnable': False,
+                                     'AeEnable': True,
                                      'AnalogueGain': 8.0, # AG is approximately ISO/100
                                      'AwbEnable': False,  # Turn off AWB
                                      'ColourGains': config['white_balance'],
@@ -151,6 +151,8 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                 camera.start()
                 # Wait for camera to start
                 sleep(2)
+                # Pause for tests
+                sleep(60)
 
                 for i in range(1, 4):
                     request = camera.capture_request()
