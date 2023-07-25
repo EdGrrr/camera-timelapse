@@ -21,7 +21,11 @@ pj.rtcAlarm.SetTime({
 
 # Wakeup at 57 min to hour
 pj.rtcAlarm.ClearAlarmFlag()
-pj.rtcAlarm.SetAlarm({'minute': 57})
+pj.rtcAlarm.SetAlarm({'year': 'EVERY_YEAR',
+                      'month': 'EVERY_MONTH',
+                      'day': 'EVERY_DAY',
+                      'hour': 'EVERY_HOUR',
+                      'minute': 57})
 pj.rtcAlarm.SetWakeupEnabled(True)
 
 # Remove power to PiJuice MCU IO pins
@@ -31,4 +35,5 @@ pj.power.SetSystemPowerSwitch(0)
 pj.power.SetPowerOff(20)
 
 # Shut down the RPi
-os.system("sudo halt")
+print(pj.rtcAlarm.GetAlarm())
+os.system(f"sudo shutdown -h now 'Restarting at {wakeupmin}'")
