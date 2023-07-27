@@ -143,7 +143,7 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                         main={'size': config['resolution']}
                     ))
                 camera.set_controls({'ExposureTime': 6000000,
-                                     'AeEnable': True,
+                                     'AeEnable': False,
                                      'AnalogueGain': 8.0, # AG is approximately ISO/100
                                      'AwbEnable': False,  # Turn off AWB
                                      'ColourGains': config['white_balance'],
