@@ -151,6 +151,8 @@ if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_
                 camera.start()
                 # Wait for camera to start
                 sleep(2)
+                # Pause for tests
+                sleep(60)
 
                 for i in range(1, 4):
                     request = camera.capture_request()
