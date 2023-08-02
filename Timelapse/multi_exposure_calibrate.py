@@ -112,7 +112,11 @@ endtime = datetime.datetime(endtime.year, endtime.month,
 az, sza1 = sunpos(now, site_lat, site_lon, site_alt)[:2]
 az, sza2 = sunpos(now+datetime.timedelta(minutes=10), site_lat, site_lon, site_alt)[:2]
 
-if (sza1>config['sza_daylight_limit_deg']) and (sza2>config['sza_daylight_limit_deg']):
+starthour = 6
+endhour = 18
+
+daytime_mode = (now.hour > starthour) and (now.hour < endhour)
+if not(daytime_mode):
     # Sun is below horizon.
     # If called within 10 minutes of the hour, record a calibration triplet
     # This makes sure we only get one triplet per hour
