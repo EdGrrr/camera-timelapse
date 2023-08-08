@@ -11,6 +11,9 @@ mkdir -p ${MAIN_FOLDER}/cal/${DAY}
 cd ${MAIN_FOLDER}
 for i in 2*/*/*CAL*.jpg;
 do
+    # Skip non-matching glob case
+    # https://stackoverflow.com/questions/20796200/how-to-loop-over-files-in-directory-and-change-path-and-add-suffix-to-filename
+    [ -e "$i" ] || continue;
     mv $i cal/$(echo $i | cut -d "/" -f 1);
 done
 
