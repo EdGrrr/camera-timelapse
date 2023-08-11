@@ -39,11 +39,16 @@ def wait_until(waittime, mindiff=0.01):
     return True
 
 
-def timestamp_image(tstamp, data, ts_factor):
+def timestamp_image(tstamp, data, ts_factor, exposure=None):
     stamp = int(tstamp)
     ts_array = np.array(list(np.binary_repr(stamp))).astype('int')
     ts_array = ts_array[None, :].repeat(ts_factor, axis=1).repeat(ts_factor, axis=0)
     data[:ts_factor, :(31*ts_factor), :] = 255*ts_array[:, :, None]
+    if exposure is not None:
+        stamp = int(exposure)
+        ts_array = np.array(list(np.binary_repr(stamp))).astype('int')
+        ts_array = ts_array[None, :].repeat(ts_factor, axis=1).repeat(ts_factor, axis=0)
+        data[ts_factor:(2*ts_factor), :(31*ts_factor), :] = 255*ts_array[:, :, None]
     return data
 
 
@@ -165,7 +170,7 @@ if not(daytime_mode):
                     request.release()
 
                     # Timestamp
-                    data = timestamp_image(time(), data, ts_factor)
+                    data = timestamp_image(time(), data, ts_factor, exposure=metadata['DigitalGain']*metadata['ExposureTime'])
 
                     im = Image.fromarray(data)
                     waittime = datetime.datetime.utcnow()
@@ -278,7 +283,7 @@ with picamera2.Picamera2() as camera:
             request.release()
 
             # Timestamp
-            data = timestamp_image(time(), data, ts_factor)
+            data = timestamp_image(time(), data, ts_factor, exposure=metadata['DigitalGain']*metadata['ExposureTime'])
 
             # Write video and correct for BGR-RGB
             videos[ssl].write(data[:, :, ::-1])
