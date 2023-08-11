@@ -46,7 +46,7 @@ def timestamp_image(tstamp, data, ts_factor, exposure=None):
     data[:ts_factor, :(31*ts_factor), :] = 255*ts_array[:, :, None]
     if exposure is not None:
         stamp = int(exposure)
-        ts_array = np.array(list(np.binary_repr(stamp))).astype('int')
+        ts_array = np.array(list(np.binary_repr(stamp))).astype('int')[1:]
         ts_array = ts_array[None, :].repeat(ts_factor, axis=1).repeat(ts_factor, axis=0)
         data[ts_factor:(2*ts_factor), :(31*ts_factor), :] = 255*ts_array[:, :, None]
     return data
