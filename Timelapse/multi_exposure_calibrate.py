@@ -66,7 +66,7 @@ def thumbnail_create(data, output_filename, max_dim=100):
     im.save(output_filename)
 
 
-def inframe(az_sun, sza_sun, az_cam, sza_cam, fov_x=40, fov_y=35):
+def inframe(az_sun, sza_sun, az_cam, sza_cam, fov_x=43, fov_y=38):
     daz = (az_sun-az_cam)%360
     if daz>180:
         daz -= 180
