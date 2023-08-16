@@ -66,7 +66,7 @@ def thumbnail_create(data, output_filename, max_dim=100):
     im.save(output_filename)
 
 
-def inframe(az_sun, sza_sun, az_cam, sza_cam, fov_x=35, fov_y=25):
+def inframe(az_sun, sza_sun, az_cam, sza_cam, fov_x=40, fov_y=35):
     daz = (az_sun-az_cam)%360
     if daz>180:
         daz -= 180
@@ -301,12 +301,12 @@ with picamera2.Picamera2() as camera:
                 thumbnail_create(data, thumbnail_name)
                 # Check sun angle
                 now = datetime.datetime.utcnow()
-                az, sza1 = sunpos(now, site_lat, site_lon, site_alt)[:2]
+                az, sza = sunpos(now, site_lat, site_lon, site_alt)[:2]
                 if (inframe(az,
                             sza,
                             config[f'site_{camera_name}']['az'],
                             90-config[f'site_{camera_name}']['el']) and
-                    (sza1<90)):
+                    (sza<90)):
                     # Sun in view, reduce exposure
                     # Note that the exposure doesn't adjust immediately, but should be good enough here
                     camera.set_controls({'ExposureTime': 75,
