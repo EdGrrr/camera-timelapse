@@ -66,6 +66,13 @@ def thumbnail_create(data, output_filename, max_dim=100):
     im.save(output_filename)
 
 
+def inframe(az_sun, sza_sun, az_cam, sza_cam, fov_x=35, fov_y=25):
+    daz = (az_sun-az_cam)%360
+    if daz>180:
+        daz -= 180
+    dsza = (sza_sun-sza_cam)
+    return (np.abs(daz)<fov_x) and (np.abs(dsza)<fov_y)
+
 # This script captures exposures with varying shutter time.
 # The frame rate needs to be longer than the exposure or it won't work.
 # The capture takes as long as the frame rate, so reducing the frame rate saves time for quick exposures.
@@ -86,6 +93,7 @@ folder = sys.argv[1]
 
 # Set timelapse prefix
 prefix = sys.argv[2]
+camera_name = '-'.join(prefix.split('-')[1:])
 
 # Get the config file
 config_file = sys.argv[3]
@@ -291,6 +299,30 @@ with picamera2.Picamera2() as camera:
 
             if waittime.second == 0:
                 thumbnail_create(data, thumbnail_name)
+                # Check sun angle
+                now = datetime.datetime.utcnow()
+                az, sza1 = sunpos(now, site_lat, site_lon, site_alt)[:2]
+                if (inframe(az,
+                            sza,
+                            config[f'site_{camera_name}']['az'],
+                            90-config[f'site_{camera_name}']['el']) and
+                    (sza1<90)):
+                    # Sun in view, reduce exposure
+                    # Note that the exposure doesn't adjust immediately, but should be good enough here
+                    camera.set_controls({'ExposureTime': 75,
+                                         'AeEnable': False,
+                                         'AnalogueGain': 1.0, # AG is approximately ISO/100
+                                         'AwbEnable': False,  # Turn off AWB
+                                         'ColourGains': config['white_balance'],
+                                         })
+                else:
+                    # Set to the requested exposure
+                    camera.set_controls({'ExposureTime': shutter_speeds[0],
+                                         'AeEnable': False,
+                                         'AnalogueGain': 1.0, # AG is approximately ISO/100
+                                         'AwbEnable': False,  # Turn off AWB
+                                         'ColourGains': config['white_balance'],
+                                         })
 
         waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
         if datetime.datetime.now()>waittime:
