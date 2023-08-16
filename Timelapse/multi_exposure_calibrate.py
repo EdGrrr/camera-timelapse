@@ -128,7 +128,7 @@ az, sza2 = sunpos(now+datetime.timedelta(minutes=10), site_lat, site_lon, site_a
 starthour = 6
 endhour = 18
 
-daytime_mode = (now.hour > starthour) and (now.hour < endhour)
+daytime_mode = (now.hour >= starthour) and (now.hour < endhour)
 if not(daytime_mode):
     # Sun is below horizon.
     # If called within 10 minutes of the hour, record a calibration triplet
