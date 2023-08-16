@@ -69,7 +69,7 @@ def thumbnail_create(data, output_filename, max_dim=100):
 def inframe(az_sun, sza_sun, az_cam, sza_cam, fov_x=45, fov_y=40):
     daz = (az_sun-az_cam)%360
     if daz>180:
-        daz -= 180
+        daz -= 360
     dsza = (sza_sun-sza_cam)
     return (np.abs(daz)<fov_x) and (np.abs(dsza)<fov_y)
 
