@@ -11,7 +11,7 @@
 
     "site_lon_degE": -0.12,
     "site_lat_degN": 51.5,
-    "site_alt_m": 30
+    "site_alt_m": 30,
 
     "site_3-1": {"az": 45.0, "el": 23.0},
     "site_3-2": {"az": 45.0, "el": 23.0},
