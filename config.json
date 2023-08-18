@@ -3,7 +3,7 @@
     "white_balance": [1.87, 1.531],
     "image_timedelta_seconds": 5,
 
-    "power_manage": true,
+    "power_manage": false,
     "camera_heater": false,
     "camera_heater_time": 300,
     "sza_daylight_limit_deg": 75,
