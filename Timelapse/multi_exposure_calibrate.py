@@ -58,7 +58,7 @@ def update_latest(filename, latest_location):
     f.close()
 
 
-def thumbnail_create(data, output_filename, max_dim=100):
+def thumbnail_create(data, output_filename, max_dim=500):
     im = Image.fromarray(data)
     ratio = im.size[1]/im.size[0]
     tbsize = max_dim, int(ratio*max_dim)
