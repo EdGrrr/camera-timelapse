@@ -77,7 +77,7 @@ try:
         # Wait for camera to start
         sleep(2)
 
-        for i in range(1, 10):
+        for i in range(1, 20):
             print('Request capture', end='', flush=True)
             request = camera.capture_request()
             data = request.make_array('main')
@@ -89,8 +89,8 @@ try:
             data = timestamp_image(time(), data, ts_factor, exposure=metadata['DigitalGain']*metadata['ExposureTime'])
 
             im = Image.fromarray(data)
-            waittime = datetime.datetime.utcnow()
             im.save(f"{folder}/{prefix}_{stime.strftime('%Y%m%dT%H%M%S')}_GCAL{i:0>2}.jpg")
+            sleep(1)
 except:
     # FIX: Stop camera running all night
     pass
