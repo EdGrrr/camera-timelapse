@@ -57,24 +57,31 @@ folder = sys.argv[1]
 # Set timelapse prefix
 prefix = sys.argv[2]
 
+# Get the config file
+config_file = sys.argv[3]
+with open(sys.argv[3]) as f:
+    config = json.load(f)
+
+
 print('Calibration images')
-stime = time()
+stime = datetime.datetime.utcnow()
 try:
     with picamera2.Picamera2() as camera:
         camera.configure(
             camera.create_still_configuration(
                 queue=False,
                 display=None,  # No preview window
+                main={'size': config['resolution']}
             ))
         camera.start()
         # Wait for camera to start
         sleep(2)
 
         for i in range(1, 10):
-            print('Request capture', end='')
+            print('Request capture', end='', flush=True)
             request = camera.capture_request()
             data = request.make_array('main')
-            print(' - Capture complete')
+            print(' - Capture complete', flush=True)
             metadata = request.get_metadata()
             request.release()
 
@@ -83,7 +90,7 @@ try:
 
             im = Image.fromarray(data)
             waittime = datetime.datetime.utcnow()
-            im.save(f"{folder}/{prefix}_{waittime.stime('%Y%m%dT%H%M%S')}_GCAL{i:0>2}.jpg")
+            im.save(f"{folder}/{prefix}_{stime.strftime('%Y%m%dT%H%M%S')}_GCAL{i:0>2}.jpg")
 except:
     # FIX: Stop camera running all night
     pass
