@@ -45,7 +45,7 @@ try:
         try:
             dirs = os.listdir(imagedir)
             dirs.sort()
-            for exclude in ['cal', 'calibration', 'videos', 'thumbnail.jpg', 'latest.txt']:
+            for exclude in ['cal', 'calibration', 'videos', 'thumbnail.jpg', 'thumbnail.txt', 'latest.txt']:
                 if exclude in dirs:
                     dirs.remove(exclude)
             if len(dirs) == 0:
@@ -73,13 +73,15 @@ except IndexError:
 statuspath = os.path.expandvars('${HOME}/camera_output')+'/latest.txt'
 with open(statuspath, 'r') as file:
     status['recent_image'] = file.read().strip().split(' ')[0]
-status['thumbnail'] = 'thumbnail.jpg'
+tbdatapath = os.path.expandvars('${HOME}/camera_output')+'/thumbnail.txt'
+with open(tbdatapath, 'r') as file:
+    status['thumbnail'] = file.read().strip().split(' ')[0]
 imagepath = os.path.expandvars('${HOME}/camera_output')+'/thumbnail.jpg'
 tbname = outputfile.replace('.json', '.jpg')
 os.system(f'cp {imagepath} {tbname}')
 
 # Do now to avoid GPS issues with timing of status
-status['status_time'] = datetime.datetime.now().isoformat()
+status['status_time'] = datetime.datetime.utcnow().isoformat()
 
 # Freespace
 df_output = get_process_output(['df', '-h'])
