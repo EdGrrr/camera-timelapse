@@ -94,7 +94,8 @@ with open(sys.argv[3]) as f:
 
 # Filename for the latest file
 latest_location = sys.argv[4]+'/latest.txt'
-thumbnail_name = sys.argv[4]+'/thumbnail.jpg'
+thumbnail_location = sys.argv[4]+'/thumbnail.jpg'
+thumbnail_data_location = sys.argv[4]+'/thumbnail.txt'
 
 # Site lon, lat, alt r calculating sun position
 site_lon, site_lat, site_alt = config['site_lon_degE'], config['site_lat_degN'], config['site_alt_m']
@@ -177,7 +178,8 @@ if not(daytime_mode):
                     im.save('{}/{}_{}_CAL{}.jpg'.format(folder, prefix, waittime.strftime('%Y%m%dT%H%M%S'), i))
 
                 update_latest('CAL_{}'.format(waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
-                thumbnail_create(data, thumbnail_name)
+                thumbnail_create(data, thumbnail_location)
+                update_latest('CAL_{}'.format(waittime.strftime('%Y%m%dT%H%M%S')), thumbnail_data_location)
         except:
             # FIX: Stop camera running all night
             pass
@@ -290,10 +292,11 @@ with picamera2.Picamera2() as camera:
             update_latest('IMG-{}_{}'.format(ssl, waittime.strftime('%Y%m%dT%H%M%S')), latest_location)
 
             if waittime.second == 0:
-                thumbnail_create(data, thumbnail_name)
+                thumbnail_create(data, thumbnail_location)
+                update_latest('IMG-{}_{}'.format(ssl, waittime.strftime('%Y%m%dT%H%M%S')), thumbnail_data_location)
 
         waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
-        if datetime.datetime.now()>waittime:
+        if datetime.datetime.utcnow()>waittime:
             print(f'Slippage at {waittime}')
             waittime += datetime.timedelta(seconds=config['image_timedelta_seconds'])
         wait_until(waittime)
