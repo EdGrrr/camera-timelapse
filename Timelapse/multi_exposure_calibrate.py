@@ -164,7 +164,7 @@ if not(daytime_mode):
                 # Pause for tests
                 sleep(60)
 
-                for i in range(1, 4):
+                for i in range(1, int(config['calibration_image_count'])+1):
                     request = camera.capture_request()
                     data = request.make_array('main')
                     metadata = request.get_metadata()

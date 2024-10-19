@@ -2,6 +2,7 @@
     "resolution": [3040, 3040],
     "white_balance": [3.71, 1.367],
     "image_timedelta_seconds": 5,
+    "calibration_image_count": 3,
 
     "power_manage": false,
     "camera_heater": false,
