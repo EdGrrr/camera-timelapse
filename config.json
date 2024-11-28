@@ -2,6 +2,7 @@
     "resolution": [1280, 960],
     "white_balance": [1.87, 1.531],
     "image_timedelta_seconds": 5,
+    "calibration_image_count": 3,
 
     "power_manage": true,
     "camera_heater": false,

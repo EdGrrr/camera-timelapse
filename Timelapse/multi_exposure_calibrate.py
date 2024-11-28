@@ -73,6 +73,17 @@ def inframe(az_sun, sza_sun, az_cam, sza_cam, fov_x=45, fov_y=40):
     dsza = (sza_sun-sza_cam)
     return (np.abs(daz)<fov_x) and (np.abs(dsza)<fov_y)
 
+def round_seconds(dt):
+    if dt.microsecond >= 500000:
+        dt += datetime.timedelta(seconds==1)
+    return dt.replace(microsecond=0)
+
+def round_up_interval(dt, interval):
+    dt = dt.replace(microsecond=0)+datetime.timedelta(seconds=1)
+    seconds_since_hour = (dt-dt.replace(minute=0,second=0,microsecond=0)).total_seconds()
+    extra_seconds = interval - seconds_since_hour%interval
+    return dt+datetime.timedelta(seconds=extra_seconds)
+
 # This script captures exposures with varying shutter time.
 # The frame rate needs to be longer than the exposure or it won't work.
 # The capture takes as long as the frame rate, so reducing the frame rate saves time for quick exposures.
@@ -172,7 +183,7 @@ if not(daytime_mode):
                 # Pause for tests
                 sleep(60)
 
-                for i in range(1, 4):
+                for i in range(1, int(config['calibration_image_count'])+1):
                     request = camera.capture_request()
                     data = request.make_array('main')
                     metadata = request.get_metadata()
@@ -269,10 +280,9 @@ with picamera2.Picamera2() as camera:
 
     now = datetime.datetime.utcnow()
     waittime = now + datetime.timedelta(seconds=10)
-    waittime = datetime.datetime(waittime.year, waittime.month, waittime.day,
-                                 waittime.hour, waittime.minute,
-                                 waittime.second-waittime.second%5, 0)
-
+    # Assuming images started on the hour, when is the next image after this time?
+    waittime = round_up_interval(waittime, config["image_timedelta_seconds"])
+    
     videos = {}
     for ssl in ss_label:
         video_name = f"{folder}/{prefix}_{waittime.strftime('%Y%m%d_%H%M%S')}_{ssl}.mp4"
