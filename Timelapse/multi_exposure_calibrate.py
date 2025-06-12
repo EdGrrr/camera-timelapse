@@ -1,5 +1,5 @@
 import picamera2
-from time import sleep, time
+from time import sleep, time, gmtime
 from PIL import Image
 import datetime
 import socket
@@ -184,6 +184,9 @@ if not(daytime_mode):
                     request.release()
 
                     # Timestamp
+                    # Note that this is a platform specific time (apparently)
+                    # It seems like we should be using gmtime()
+                    # https://stackoverflow.com/questions/16554887/does-pythons-time-time-return-a-timestamp-in-utc
                     data = timestamp_image(time(), data, ts_factor, exposure=metadata['DigitalGain']*metadata['ExposureTime'])
 
                     im = Image.fromarray(data)
